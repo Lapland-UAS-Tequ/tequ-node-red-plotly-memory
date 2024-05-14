@@ -1,0 +1,106 @@
+{
+    "id": "faa1b8c6504de078",
+    "type": "subflow",
+    "name": "memory",
+    "info": "Saves Plotly-chart data into global memory.\r\n\r\nCreate-node uses global memory to load recent chart data, if available.\r\n\r\nUse of this node is optional.",
+    "category": "Plotly",
+    "in": [
+        {
+            "x": 60,
+            "y": 80,
+            "wires": [
+                {
+                    "id": "39adcc6990949ec5"
+                }
+            ]
+        }
+    ],
+    "out": [],
+    "env": [],
+    "meta": {
+        "module": "tequ-node-red-plotly-memory",
+        "version": "0.0.1",
+        "author": "juha.autioniemi@lapinamk.fi",
+        "desc": "Save chart data in global memory.",
+        "license": "MIT"
+    },
+    "color": "#3FADB5",
+    "inputLabels": [
+        "chart data in"
+    ],
+    "icon": "font-awesome/fa-database",
+    "status": {
+        "x": 520,
+        "y": 180,
+        "wires": [
+            {
+                "id": "2eafe1bd36cb4502",
+                "port": 0
+            }
+        ]
+    },
+    "flow": [
+        {
+            "id": "e3c441c50d4d0795",
+            "type": "function",
+            "z": "faa1b8c6504de078",
+            "name": "Append into global chart memory",
+            "func": "let action = msg.action;\nlet chart_name = msg.chart_name;\nlet ts = msg.ts;\n\nif (action == \"append_data\") {\n    let traces = global.get(chart_name) || {};\n    let trace_name = msg.topic;\n    let x_value = msg.payload.timestamp;\n    let y_value = msg.payload.value;\n    let chart_history_size = msg.payload.chart_history_size;\n    let line_params = msg.line_params;\n\n    if (trace_name in traces) {\n        let x_data = traces[trace_name].x;\n        let y_data = traces[trace_name].y;\n        let size = x_data.length\n\n        if (Array.isArray(x_value) && Array.isArray(y_value)){              \n            x_data = x_data.concat(x_value);\n            y_data = y_data.concat(y_value);\n\n        }\n        else{\n            x_data.push(x_value)\n            y_data.push(y_value)\n        }\n\n        if (size == chart_history_size) {\n            x_data.shift()\n            y_data.shift()\n        }\n        else if (size > chart_history_size) {\n            x_data = x_data.slice(Math.max(x_data.length - chart_history_size, 0))\n            y_data = y_data.slice(Math.max(y_data.length - chart_history_size, 0))\n        }\n\n        traces[trace_name].x = x_data\n        traces[trace_name].y = y_data\n        traces[trace_name].line = line_params\n    }\n    else {\n        traces[trace_name] = {\n            \"name\": trace_name,\n            \"x\": [],\n            \"y\": [],\n            \"type\": \"scatter\",\n            \"mode\": \"lines\",\n            \"line\": line_params\n        }\n\n        if (Array.isArray(x_value) && Array.isArray(y_value)) {\n            traces[trace_name].x = traces[trace_name].x.concat(x_value)\n            traces[trace_name].y = traces[trace_name].y.concat(y_value)\n\n        }\n        else {\n            traces[trace_name].x.push(x_value)\n            traces[trace_name].y.push(y_value)\n        }\n    }\n    global.set(chart_name, traces)\n    node.status({ fill: \"blue\", shape: \"dot\", text: ts + \" | Append | \" + trace_name });\n}\nelse {\n    node.status({ fill: \"red\", shape: \"dot\", text: ts + \" | Skipped\" });\n}\n",
+            "outputs": 0,
+            "timeout": 0,
+            "noerr": 0,
+            "initialize": "",
+            "finalize": "",
+            "libs": [],
+            "x": 400,
+            "y": 80,
+            "wires": []
+        },
+        {
+            "id": "2eafe1bd36cb4502",
+            "type": "status",
+            "z": "faa1b8c6504de078",
+            "name": "",
+            "scope": null,
+            "x": 320,
+            "y": 180,
+            "wires": [
+                []
+            ]
+        },
+        {
+            "id": "39adcc6990949ec5",
+            "type": "moment",
+            "z": "faa1b8c6504de078",
+            "name": "ts",
+            "topic": "",
+            "input": "",
+            "inputType": "date",
+            "inTz": "Europe/Helsinki",
+            "adjAmount": 0,
+            "adjType": "days",
+            "adjDir": "add",
+            "format": "HH:mm:ss",
+            "locale": "en-US",
+            "output": "ts",
+            "outputType": "msg",
+            "outTz": "Europe/Helsinki",
+            "x": 170,
+            "y": 80,
+            "wires": [
+                [
+                    "e3c441c50d4d0795"
+                ]
+            ]
+        },
+        {
+            "id": "4ef34e659ba674c1",
+            "type": "subflow:faa1b8c6504de078",
+            "z": "37f93c27a1c435dd",
+            "name": "",
+            "x": 340,
+            "y": 1080,
+            "wires": []
+        }
+    ]
+}
