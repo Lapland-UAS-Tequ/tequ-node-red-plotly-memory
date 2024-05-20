@@ -7,7 +7,7 @@ Save chart data in global memory.
 
 Run the following command in your Node-RED user directory - typically `~/.node-red`
 
-        npm install Lapland-UAS-Tequ/tequ-node-red-plotly-memory
+        npm install tequ-node-red-plotly-memory
 
 ## Information
 
