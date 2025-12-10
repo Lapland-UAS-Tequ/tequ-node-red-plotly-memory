@@ -19,7 +19,7 @@
     "env": [],
     "meta": {
         "module": "tequ-node-red-plotly-memory",
-        "version": "0.0.2",
+        "version": "0.2",
         "author": "juha.autioniemi@lapinamk.fi",
         "desc": "Save chart data in global memory.",
         "license": "MIT"
@@ -45,7 +45,7 @@
             "type": "function",
             "z": "faa1b8c6504de078",
             "name": "Append into global chart memory",
-            "func": "let action = msg.action;\nlet chart_name = msg.chart_name;\nlet ts = msg.ts;\n\nif (action == \"append_data\") {\n    let traces = global.get(chart_name) || {};\n    let trace_name = msg.topic;\n    let x_value = msg.payload.timestamp;\n    let y_value = msg.payload.value;\n    let chart_history_size = msg.payload.chart_history_size;\n    let line_params = msg.line_params;\n\n    if (trace_name in traces) {\n        let x_data = traces[trace_name].x;\n        let y_data = traces[trace_name].y;\n        let size = x_data.length\n\n        if (Array.isArray(x_value) && Array.isArray(y_value)){              \n            x_data = x_data.concat(x_value);\n            y_data = y_data.concat(y_value);\n\n        }\n        else{\n            x_data.push(x_value)\n            y_data.push(y_value)\n        }\n\n        if (size == chart_history_size) {\n            x_data.shift()\n            y_data.shift()\n        }\n        else if (size > chart_history_size) {\n            x_data = x_data.slice(Math.max(x_data.length - chart_history_size, 0))\n            y_data = y_data.slice(Math.max(y_data.length - chart_history_size, 0))\n        }\n\n        traces[trace_name].x = x_data\n        traces[trace_name].y = y_data\n        traces[trace_name].line = line_params\n    }\n    else {\n        traces[trace_name] = {\n            \"name\": trace_name,\n            \"x\": [],\n            \"y\": [],\n            \"type\": \"scatter\",\n            \"mode\": \"lines\",\n            \"line\": line_params\n        }\n\n        if (Array.isArray(x_value) && Array.isArray(y_value)) {\n            traces[trace_name].x = traces[trace_name].x.concat(x_value)\n            traces[trace_name].y = traces[trace_name].y.concat(y_value)\n\n        }\n        else {\n            traces[trace_name].x.push(x_value)\n            traces[trace_name].y.push(y_value)\n        }\n    }\n    global.set(chart_name, traces)\n    node.status({ fill: \"blue\", shape: \"dot\", text: ts + \" | Append | \" + trace_name });\n}\nelse {\n    node.status({ fill: \"red\", shape: \"dot\", text: ts + \" | Skipped\" });\n}\n",
+            "func": "let action = msg.action;\nlet chart_name = msg.chart_name;\nlet ts = msg.ts;\n\nif (action == \"update_data\") {\n    let traces = global.get(chart_name) || {};\n    let trace_name = msg.topic;\n    let x_value = msg.payload.timestamp;\n    let y_value = msg.payload.value;\n    let chart_history_size = msg.payload.chart_history_size;\n    let line_params = msg.line_params;\n    let marker_params = msg.marker_params;\n    let y_axis = msg.y_axis;\n    let chart_mode = msg.chart_mode;\n    let chart_type = msg.chart_type;\n    let hover_template = msg.hover_template;\n\n\n    if (trace_name in traces) {\n        let x_data = traces[trace_name].x;\n        let y_data = traces[trace_name].y;\n        let size = x_data.length\n\n        if (Array.isArray(x_value) && Array.isArray(y_value)){              \n            x_data = x_data.concat(x_value);\n            y_data = y_data.concat(y_value);\n\n        }\n        else{\n            x_data.push(x_value)\n            y_data.push(y_value)\n        }\n\n        if (size == chart_history_size) {\n            x_data.shift()\n            y_data.shift()\n        }\n        else if (size > chart_history_size) {\n            x_data = x_data.slice(Math.max(x_data.length - chart_history_size, 0))\n            y_data = y_data.slice(Math.max(y_data.length - chart_history_size, 0))\n        }\n\n        traces[trace_name].x = x_data\n        traces[trace_name].y = y_data\n        traces[trace_name].line = line_params\n        traces[trace_name].yaxis = y_axis\n        traces[trace_name].mode = chart_mode\n        traces[trace_name].type = chart_type\n        traces[trace_name].marker = marker_params\n        traces[trace_name].hovertemplate = hover_template\n    }\n    else {\n        traces[trace_name] = {\n            \"name\": trace_name,\n            \"x\": [],\n            \"y\": [],\n            \"type\": chart_type,\n            \"mode\": chart_mode,\n            \"line\": line_params,\n            \"yaxis\":y_axis,\n            \"marker\":marker_params,\n            \"hovertemplate\":hover_template\n        }\n\n        if (Array.isArray(x_value) && Array.isArray(y_value)) {\n            traces[trace_name].x = traces[trace_name].x.concat(x_value)\n            traces[trace_name].y = traces[trace_name].y.concat(y_value)\n\n        }\n        else {\n            traces[trace_name].x.push(x_value)\n            traces[trace_name].y.push(y_value)\n        }\n    }\n    global.set(chart_name, traces)\n    node.status({ fill: \"blue\", shape: \"dot\", text: ts + \" | Append | \" + trace_name });\n}\nelse if (action == \"add_data\") {\n    let traces = global.get(chart_name) || {};\n    let trace_name = msg.topic;\n    let x_value = msg.payload.timestamp;\n    let y_value = msg.payload.value;\n    let chart_history_size = msg.payload.chart_history_size;\n    let line_params = msg.line_params;\n    let marker_params = msg.marker_params;\n    let y_axis = msg.y_axis;\n    let chart_mode = msg.chart_mode;\n    let chart_type = msg.chart_type;\n    let hover_template = msg.hover_template;\n\n    traces[trace_name] = {\n        \"name\": trace_name,\n        \"x\": x_value,\n        \"y\": y_value,\n        \"type\": chart_type,\n        \"mode\": chart_mode,\n        \"line\": line_params,\n        \"yaxis\":y_axis,\n        \"marker\":marker_params,\n        \"hovertemplate\":hover_template\n    }\n    global.set(chart_name, traces)\n    node.status({ fill: \"blue\", shape: \"dot\", text: ts + \" | Append | \" + trace_name });\n}\n\nelse {\n    node.status({ fill: \"red\", shape: \"dot\", text: ts + \" | Skipped\" });\n}\n",
             "outputs": 0,
             "timeout": 0,
             "noerr": 0,
@@ -61,7 +61,9 @@
             "type": "status",
             "z": "faa1b8c6504de078",
             "name": "",
-            "scope": null,
+            "scope": [
+                "e3c441c50d4d0795"
+            ],
             "x": 320,
             "y": 180,
             "wires": [
@@ -94,13 +96,21 @@
             ]
         },
         {
-            "id": "357c2c5af9e5ce20",
+            "id": "659011d2c528a8b1",
             "type": "subflow:faa1b8c6504de078",
-            "z": "debe57df1350b9f8",
+            "z": "c49b3020b5a4b737",
             "name": "",
-            "x": 240,
-            "y": 1240,
+            "x": 440,
+            "y": 400,
             "wires": []
+        },
+        {
+            "id": "80cc9cd16b5ea61a",
+            "type": "global-config",
+            "env": [],
+            "modules": {
+                "node-red-contrib-moment": "5.0.0"
+            }
         }
     ]
 }
