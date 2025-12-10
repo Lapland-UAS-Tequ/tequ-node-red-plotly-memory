@@ -19,7 +19,7 @@
     "env": [],
     "meta": {
         "module": "tequ-node-red-plotly-memory",
-        "version": "0.2",
+        "version": "0.2.0",
         "author": "juha.autioniemi@lapinamk.fi",
         "desc": "Save chart data in global memory.",
         "license": "MIT"
@@ -105,7 +105,7 @@
             "wires": []
         },
         {
-            "id": "80cc9cd16b5ea61a",
+            "id": "fd914e61729c247f",
             "type": "global-config",
             "env": [],
             "modules": {
